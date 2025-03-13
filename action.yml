@@ -1,0 +1,31 @@
+name: zidsa-action
+description: Community built action for zidsa
+author: Younis Ahmed
+
+branding:
+  icon: heart
+  color: red
+
+inputs:
+  EMAIL:
+    description: Account email
+    required: true
+  PASSWORD:
+    description: Account password
+    required: true
+  THEME_ID:
+    description: Theme ID
+    required: true
+  GITHUB_TOKEN:
+    description: GitHub token
+    required: true
+
+outputs:
+  success:
+    description: Whether the action was successful
+  error:
+    description: Error message if the action failed
+
+runs:
+  using: node20
+  main: dist/index.js
