@@ -45,6 +45,7 @@
     "@rollup/plugin-commonjs": "^28.0.3",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-typescript": "^12.1.2",
+    "@types/archiver": "^6.0.3",
     "@types/node": "^22.13.13",
     "@typescript-eslint/eslint-plugin": "^8.28.0",
     "@typescript-eslint/parser": "^8.28.0",
@@ -63,6 +64,7 @@
   },
   "dependencies": {
     "@actions/core": "^1.11.1",
+    "archiver": "^7.0.1",
     "form-data": "^4.0.2"
   },
   "optionalDependencies": {
