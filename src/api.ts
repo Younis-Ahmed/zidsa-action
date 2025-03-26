@@ -85,12 +85,12 @@ class Api {
     
       public async send(): Promise<unknown> {
         const url = `${this.#route}${this.#key}${this.#params}`;
+        const options = {
+          method: this.#method,
+          headers: this.#headers,
+          body: this.#method !== 'GET' ? JSON.stringify(this.#body) : undefined,
+        };
         try {
-          const options = {
-            method: this.#method,
-            headers: this.#headers,
-            body: this.#method !== 'GET' ? JSON.stringify(this.#body) : undefined,
-          };
 
           const response = await fetch(url, options);
           
