@@ -1,17 +1,23 @@
 import * as core from '@actions/core'
 
 
+export type VariableKey = 'EMAIL' | 'PASSWORD' | 'THEME_ID' | 'GITHUB_TOKEN';
+
 export interface Variable {
-    email: string
-    password: string
-    theme_id: string
-    github_token: string
+    EMAIL: string;
+    PASSWORD: string;
+    THEME_ID: string;
+    GITHUB_TOKEN: string;
 }
 
-export function getVariable(): Variable {
-    const email = core.getInput('EMAIL')
-    const password = core.getInput('PASSWORD')
-    const theme_id = core.getInput('THEME_ID')
-    const github_token = core.getInput('GITHUB_TOKEN')
-    return {email, password, theme_id, github_token}
+/**
+ * Gets values for the specified GitHub Action input variables
+ * @param variables Array of variable keys to retrieve
+ * @returns Object containing the requested variables and their values
+ */
+export function getVariables<T extends VariableKey>(variables: T[]): Pick<Variable, T> {
+    return variables.reduce((acc, variable) => {
+        acc[variable] = core.getInput(variable);
+        return acc;
+    }, {} as Pick<Variable, T>);
 }
