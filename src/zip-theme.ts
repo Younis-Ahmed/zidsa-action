@@ -1,14 +1,15 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import archiver from 'archiver'
+import { getVersionBump } from './getVersionBump.js'
 import logger from './logger.js'
 import sdk from './sdk.js'
 import { formatSizeUnits, validateTheme } from './validation.js'
 
 const archive = archiver('zip')
 
-async function zip_theme(build_name: string, build_path: string): Promise<any> {
-  const zipfile_path: string = path.resolve(build_path, `${build_name}.zip`)
+async function zip_theme(build_name: string, build_path: string): Promise<ReturnType<typeof getVersionBump>> {
+  const zipfile_path = path.resolve(build_path, `${build_name}.zip`)
 
   try {
     const valid_theme = await validateTheme(build_path)
@@ -59,6 +60,13 @@ async function zip_theme(build_name: string, build_path: string): Promise<any> {
   }
 
   await archive.finalize()
+
+  const bumpRecommendation = await getVersionBump(build_path)
+  logger.log(`Version bump recommendation: ${JSON.stringify(bumpRecommendation, null, 2)}`)
+
+  return {
+    ...bumpRecommendation,
+  }
 }
 
 export default zip_theme
