@@ -1,5 +1,5 @@
-import logger from './logger.js'
 import Api from './api.js'
+import logger from './logger.js'
 import { setToken } from './token.js'
 
 interface LoginResponse {
@@ -10,14 +10,14 @@ interface LoginResponse {
   [key: string]: any
 }
 
-export const login = (email: string, password: string): Promise<void> =>
-  new Api()
+export function login(email: string, password: string): Promise<void> {
+  return new Api()
     .addBaseUrl()
     .addRoute('/market/partner-login')
     .addHeaders([{ key: 'Content-Type', value: 'application/json' }])
     .addBody({
       email,
-      password
+      password,
     })
     .post()
     .send<LoginResponse>()
@@ -28,7 +28,8 @@ export const login = (email: string, password: string): Promise<void> =>
           throw new Error('Failed to save token')
         }
         logger.log('Authentication successful!')
-      } else {
+      }
+      else {
         logger.error('Authentication failed. Invalid response from server.')
         throw new Error('Invalid response from server')
       }
@@ -37,3 +38,4 @@ export const login = (email: string, password: string): Promise<void> =>
       logger.error('Authentication failed')
       throw error
     })
+}
