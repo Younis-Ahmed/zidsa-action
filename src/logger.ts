@@ -1,8 +1,8 @@
+import type { AnnotationProperties } from '@actions/core'
 import {
   error,
-  warning,
   notice,
-  type AnnotationProperties
+  warning,
 } from '@actions/core'
 
 const logger = {
@@ -14,7 +14,7 @@ const logger = {
   },
   warning: (message: string, properties?: AnnotationProperties) => {
     warning(message, properties)
-  }
+  },
 }
 
 export default logger
