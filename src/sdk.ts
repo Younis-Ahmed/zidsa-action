@@ -19,7 +19,7 @@ const structure: SDKStructure = {
     'modules',
     'locals',
     'common',
-    'assets'
+    'assets',
   ],
   templates: [
     '404.twig',
@@ -36,7 +36,7 @@ const structure: SDKStructure = {
     'product.twig',
     'products.twig',
     'search.twig',
-    'shipping-and-payments.twig'
+    'shipping-and-payments.twig',
   ],
   common: ['.twig'],
   modules: ['.twig'],
@@ -55,9 +55,9 @@ const structure: SDKStructure = {
     '.woff2',
     '.otf',
     '.ttf',
-    '.eot'
+    '.eot',
   ],
-  locals: ['.json']
+  locals: ['.json'],
 }
 
 const optional_root_files: string[] = ['query.json', 'modules']
@@ -68,7 +68,7 @@ const optional_files: SDKStructure = {
   common: [],
   modules: [],
   assets: [],
-  locals: []
+  locals: [],
 }
 
 const root_allowed_files: string[] = [
@@ -76,7 +76,7 @@ const root_allowed_files: string[] = [
   'config.json',
   'layout.twig',
   'header.twig',
-  'footer.twig'
+  'footer.twig',
 ]
 
 const need_structure_validation: string[] = ['templates']
@@ -86,13 +86,13 @@ const MAX_ASSETS_FILE_SIZE_2MB: number = 2 * 1000000
 const MAX_ZIP_FILE_SIZE_50MB: number = 50 * 1000000
 
 const sdk = {
-  structure: structure,
-  optional_root_files: optional_root_files,
-  optional_files: optional_files,
-  root_allowed_files: root_allowed_files,
-  need_structure_validation: need_structure_validation,
-  MAX_ASSETS_FILE_SIZE_2MB: MAX_ASSETS_FILE_SIZE_2MB,
-  MAX_ZIP_FILE_SIZE_50MB: MAX_ZIP_FILE_SIZE_50MB
+  structure,
+  optional_root_files,
+  optional_files,
+  root_allowed_files,
+  need_structure_validation,
+  MAX_ASSETS_FILE_SIZE_2MB,
+  MAX_ZIP_FILE_SIZE_50MB,
 }
 
 export default sdk
