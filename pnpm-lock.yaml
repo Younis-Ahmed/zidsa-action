@@ -14,6 +14,9 @@ importers:
       archiver:
         specifier: ^7.0.1
         version: 7.0.1
+      conventional-recommended-bump:
+        specifier: ^11.0.0
+        version: 11.0.0
       form-data:
         specifier: ^4.0.2
         version: 4.0.2
@@ -223,6 +226,18 @@ packages:
   '@babel/types@7.27.0':
     resolution: {integrity: sha512-H45s8fVLYjbhFH62dIJ3WtmJ6RSPt/3DRO0ZcT2SUiYiQyz3BLVb9ADEnLl91m74aQPS3AzzeajZHYOalWe3bg==}
     engines: {node: '>=6.9.0'}
+
+  '@conventional-changelog/git-client@2.0.0':
+    resolution: {integrity: sha512-6lD/xsDwx5xQ1dLgL1Ud47MHatuJpwVXbyHWZhlIUqRRTWTp1jRpwdk1roEaf752WA6LAbZY7elVkRQPHofUHA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      conventional-commits-filter: ^5.0.0
+      conventional-commits-parser: ^6.1.0
+    peerDependenciesMeta:
+      conventional-commits-filter:
+        optional: true
+      conventional-commits-parser:
+        optional: true
 
   '@emnapi/core@1.3.1':
     resolution: {integrity: sha512-pVGjBIt1Y6gg3EJN8jTcfpP/+uuRksIo055oE/OBkDNcjZqVbfkWCksG1Jp4yZnj3iKWyWX8fdG/j6UDYPbFog==}
@@ -1265,6 +1280,24 @@ packages:
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
+  conventional-changelog-preset-loader@5.0.0:
+    resolution: {integrity: sha512-SetDSntXLk8Jh1NOAl1Gu5uLiCNSYenB5tm0YVeZKePRIgDW9lQImromTwLa3c/Gae298tsgOM+/CYT9XAl0NA==}
+    engines: {node: '>=18'}
+
+  conventional-commits-filter@5.0.0:
+    resolution: {integrity: sha512-tQMagCOC59EVgNZcC5zl7XqO30Wki9i9J3acbUvkaosCT6JX3EeFwJD7Qqp4MCikRnzS18WXV3BLIQ66ytu6+Q==}
+    engines: {node: '>=18'}
+
+  conventional-commits-parser@6.1.0:
+    resolution: {integrity: sha512-5nxDo7TwKB5InYBl4ZC//1g9GRwB/F3TXOGR9hgUjMGfvSP4Vu5NkpNro2+1+TIEy1vwxApl5ircECr2ri5JIw==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  conventional-recommended-bump@11.0.0:
+    resolution: {integrity: sha512-+4JwCwCkPjQ6ii2rCw5CNPCuPs9hSyhzclSrleBc7NEoALTRs1jQcn1tBpr4n1nRdUecX1z6J2cxb+BnfM2WUQ==}
+    engines: {node: '>=18'}
+    hasBin: true
+
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
 
@@ -2049,6 +2082,10 @@ packages:
   math-intrinsics@1.1.0:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
     engines: {node: '>= 0.4'}
+
+  meow@13.2.0:
+    resolution: {integrity: sha512-pxQJQzB6djGPXh08dacEloMFopsOqGVRKFPYvPOt9XDZ1HasbgDZA74CJGreSU4G3Ak7EFJGoiH2auq+yXISgA==}
+    engines: {node: '>=18'}
 
   merge2@1.4.1:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
@@ -3016,6 +3053,13 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.25.9
       '@babel/helper-validator-identifier': 7.25.9
+
+  '@conventional-changelog/git-client@2.0.0(conventional-commits-filter@5.0.0)(conventional-commits-parser@6.1.0)':
+    dependencies:
+      semver: 7.7.1
+    optionalDependencies:
+      conventional-commits-filter: 5.0.0
+      conventional-commits-parser: 6.1.0
 
   '@emnapi/core@1.3.1':
     dependencies:
@@ -4091,6 +4135,22 @@ snapshots:
 
   concat-map@0.0.1: {}
 
+  conventional-changelog-preset-loader@5.0.0: {}
+
+  conventional-commits-filter@5.0.0: {}
+
+  conventional-commits-parser@6.1.0:
+    dependencies:
+      meow: 13.2.0
+
+  conventional-recommended-bump@11.0.0:
+    dependencies:
+      '@conventional-changelog/git-client': 2.0.0(conventional-commits-filter@5.0.0)(conventional-commits-parser@6.1.0)
+      conventional-changelog-preset-loader: 5.0.0
+      conventional-commits-filter: 5.0.0
+      conventional-commits-parser: 6.1.0
+      meow: 13.2.0
+
   convert-source-map@2.0.0: {}
 
   core-util-is@1.0.3: {}
@@ -5001,6 +5061,8 @@ snapshots:
       semver: 7.7.1
 
   math-intrinsics@1.1.0: {}
+
+  meow@13.2.0: {}
 
   merge2@1.4.1: {}
 
