@@ -10,7 +10,7 @@ interface LoginResponse {
   [key: string]: any
 }
 
-export function login(email: string, password: string): Promise<void> {
+export async function login(email: string, password: string): Promise<void> {
   return new Api()
     .addBaseUrl()
     .addRoute('/market/partner-login')
