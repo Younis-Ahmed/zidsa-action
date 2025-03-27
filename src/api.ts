@@ -1,23 +1,23 @@
-import type FormData from 'form-data'
+import FormData from 'form-data'
 import logger from './logger.js'
 import { getToken } from './token.js'
 
 class Api {
-  #baseUrl = ''
-  #headers = {} as Record<string, string>
-  #route = ''
-  #method = 'GET'
-  #body: unknown = {}
-  #token = ''
-  #params = '' as string
-  #key = '' as string
+  private baseUrl = ''
+  private headers = {} as Record<string, string>
+  private route = ''
+  private method = 'GET'
+  private body: unknown = {}
+  private token = ''
+  private params = '' as string
+  private key = '' as string
 
   constructor() {
-    this.#token = getToken()
+    this.token = getToken()
   }
 
   public addBaseUrl(baseUrl?: string) {
-    this.#baseUrl = baseUrl || 'https://api.zid.sa/v1'
+    this.baseUrl = baseUrl || 'https://api.zid.sa/v1'
     return this
   }
 
@@ -26,7 +26,7 @@ class Api {
     && params.length > 0
     && params?.map(
       ({ key, value }) =>
-        (this.#params += `${this.#params === '' ? '?' : '&'}${key}=${
+        (this.params += `${this.params === '' ? '?' : '&'}${key}=${
           Array.isArray(value) ? value.join(',') : value
         }`),
     )
@@ -34,62 +34,76 @@ class Api {
   }
 
   public addFormData(formData: FormData) {
-    this.#body = formData
-    this.#headers['Content-Type'] = 'multipart/form-data'
+    this.body = formData
+    this.headers['Content-Type'] = 'multipart/form-data'
     return this
   }
 
   public addKey(key: string) {
-    this.#key = this.#key ? `${this.#key}/${key}` : `/${key}`
+    this.key = this.key ? `${this.key}/${key}` : `/${key}`
     return this
   }
 
   public addHeaders(headers: { key: string, value: string }[]) {
-    headers.map(({ key, value }) => (this.#headers[key] = value))
+    headers.forEach(({ key, value }) => (this.headers[key] = value))
     return this
   }
 
   public addUserToken() {
-    this.#headers['x-partner-token'] = `${this.#token}`
+    this.headers['x-partner-token'] = `${this.token}`
     return this
   }
 
   public addRoute(endpoint: string) {
-    this.#route = `${this.#baseUrl}${endpoint}`
+    this.route = `${this.baseUrl}${endpoint}`
     return this
   }
 
   public addBody(body: unknown) {
-    this.#body = body
+    this.body = body
+    if (!(body instanceof FormData)) {
+      this.headers['Content-Type'] = 'application/json'
+    }
     return this
   }
 
   public post() {
-    this.#method = 'POST'
+    this.method = 'POST'
     return this
   }
 
   public get() {
-    this.#method = 'GET'
+    this.method = 'GET'
     return this
   }
 
   public put() {
-    this.#method = 'PUT'
+    this.method = 'PUT'
     return this
   }
 
   public delete() {
-    this.#method = 'DELETE'
+    this.method = 'DELETE'
+    return this
+  }
+
+  public reset() {
+    this.baseUrl = ''
+    this.headers = {}
+    this.route = ''
+    this.method = 'GET'
+    this.body = {}
+    this.params = ''
+    this.key = ''
     return this
   }
 
   public async send<T = unknown>(): Promise<T> {
-    const url = `${this.#route}${this.#key}${this.#params}`
+    const url = `${this.route}${this.key}${this.params}`
     const options = {
-      method: this.#method,
-      headers: this.#headers,
-      body: this.#method !== 'GET' ? JSON.stringify(this.#body) : undefined,
+      method: this.method,
+      headers: this.headers,
+      body: this.method !== 'GET' ? JSON.stringify(this.body) : undefined,
     }
 
     try {
@@ -112,7 +126,7 @@ class Api {
       return (await response.json()) as T
     }
     catch (error) {
-      logger.error(`API request failed: ${error}`)
+      logger.error(`API request failed: ${JSON.stringify(error)}`)
       throw error
     }
   }
