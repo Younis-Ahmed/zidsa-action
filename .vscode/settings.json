@@ -48,6 +48,6 @@
     "pcss",
     "postcss"
   ],
-  "files.autoSave": "afterDelay",
-  
+  "files.autoSave": "afterDelay"
+
 }
