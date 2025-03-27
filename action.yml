@@ -16,9 +16,6 @@ inputs:
   THEME_ID:
     description: Theme ID
     required: true
-  GITHUB_TOKEN:
-    description: GitHub token
-    required: true
 
 outputs:
   success:
