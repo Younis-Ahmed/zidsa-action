@@ -9,6 +9,7 @@ export function validateTheme(build_path: string): Promise<string> {
 
     const valid_structure = validate_structure('root', files, sdk.structure.root)
     if (valid_structure !== true) {
+      // TODO: Add summary for github actions output
       return reject(
         new Error(`Unable to find:\n   ${valid_structure}\n\n   - Make sure theme path is correct or add required files\n`),
       )
