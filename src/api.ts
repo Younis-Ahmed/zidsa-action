@@ -1,6 +1,6 @@
+import type FormData from 'form-data'
 import logger from './logger.js'
 import { getToken } from './token.js'
-import type FormData from 'form-data'
 
 class Api {
   #baseUrl = ''
@@ -21,15 +21,15 @@ class Api {
     return this
   }
 
-  public addParams(params?: { key: string; value: string | string[] }[]) {
-    params &&
-      params.length > 0 &&
-      params?.map(
-        ({ key, value }) =>
-          (this.#params += `${this.#params === '' ? '?' : '&'}${key}=${
-            Array.isArray(value) ? value.join(',') : value
-          }`)
-      )
+  public addParams(params?: { key: string, value: string | string[] }[]) {
+    params
+    && params.length > 0
+    && params?.map(
+      ({ key, value }) =>
+        (this.#params += `${this.#params === '' ? '?' : '&'}${key}=${
+          Array.isArray(value) ? value.join(',') : value
+        }`),
+    )
     return this
   }
 
@@ -44,7 +44,7 @@ class Api {
     return this
   }
 
-  public addHeaders(headers: { key: string; value: string }[]) {
+  public addHeaders(headers: { key: string, value: string }[]) {
     headers.map(({ key, value }) => (this.#headers[key] = value))
     return this
   }
@@ -89,7 +89,7 @@ class Api {
     const options = {
       method: this.#method,
       headers: this.#headers,
-      body: this.#method !== 'GET' ? JSON.stringify(this.#body) : undefined
+      body: this.#method !== 'GET' ? JSON.stringify(this.#body) : undefined,
     }
 
     try {
@@ -102,15 +102,16 @@ class Api {
         }
 
         const data = await response.json()
-        const message =
-          typeof data === 'object' && data !== null && 'message' in data
+        const message
+          = typeof data === 'object' && data !== null && 'message' in data
             ? (data.message as string)
             : `Request failed with status ${response.status}`
         throw new Error(message)
       }
 
       return (await response.json()) as T
-    } catch (error) {
+    }
+    catch (error) {
       logger.error(`API request failed: ${error}`)
       throw error
     }
