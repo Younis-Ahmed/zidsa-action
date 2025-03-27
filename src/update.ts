@@ -15,11 +15,9 @@ export interface TArguments {
 export default async function updateTheme(
   theme_id: string,
   theme_path: string,
-  change_type: string,
-  release_notes: string,
 ): Promise<any> {
   process.chdir(theme_path)
-  await zip_theme('theme', theme_path)
+  const { releaseType, reason } = await zip_theme('theme', theme_path)
   const api = new Api()
   const form = new FormData()
   const fileStream = fs.createReadStream(theme_path)
@@ -32,8 +30,8 @@ export default async function updateTheme(
 
     fileStream.on('open', () => {
       form.append('theme_file', fileStream, path.basename(theme_path))
-      form.append('change_type', change_type)
-      form.append('release_notes', release_notes)
+      form.append('change_type', releaseType)
+      form.append('release_notes', reason)
 
       api
         .addBaseUrl()
