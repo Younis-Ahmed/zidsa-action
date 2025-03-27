@@ -1,12 +1,12 @@
-import Api from './api.js'
 import fs from 'node:fs'
-import process from 'node:process'
 import path from 'node:path'
-import logger from './logger.js'
+import process from 'node:process'
 import FormData from 'form-data'
+import Api from './api.js'
+import logger from './logger.js'
 import zip_theme from './zip-theme.js'
 
-export type TArguments = {
+export interface TArguments {
   theme_id: string
   change_type: 'major' | 'minor' | 'patch'
   release_notes: string
@@ -16,7 +16,7 @@ export default async function updateTheme(
   theme_id: string,
   theme_path: string,
   change_type: string,
-  release_notes: string
+  release_notes: string,
 ): Promise<any> {
   process.chdir(theme_path)
   await zip_theme('theme', theme_path)
