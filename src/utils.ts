@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { getInput } from '@actions/core'
 
 export type VariableKey = 'EMAIL' | 'PASSWORD' | 'THEME_ID'
@@ -14,14 +15,14 @@ export interface Variables {
  * @returns Object containing the requested variables and their values
  */
 export function getVariables<T extends VariableKey>(
-  variables: T[]
+  variables: T[],
 ): Pick<Variables, T> {
   return variables.reduce(
     (acc, variable) => {
       acc[variable] = getInput(variable)
       return acc
     },
-    {} as Pick<Variables, T>
+    {} as Pick<Variables, T>,
   )
 }
 
