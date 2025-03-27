@@ -1,61 +1,43 @@
 {
   "name": "zidsa-action",
+  "type": "module",
   "version": "0.1.0",
+  "private": true,
   "packageManager": "pnpm@9.12.3",
   "description": "Community built Github Action for zidsa",
-  "type": "module",
-  "main": "index.js",
-  "private": true,
+  "author": "Younis Ahmed <07430e0e-29c0-4a43-bcd0-c123714a124a@anonaddy.com>",
+  "license": "MIT",
   "homepage": " https://github.com/younis-ahmed/zidsa-action.git",
-  "bugs": {
-    "url": "https://github.com/younis-ahmed/zidsa-action.git/issues"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/younis-ahmed/zidsa-action.git"
   },
-  "scripts": {
-    "bundle": "pnpm run format:write && pnpm run package",
-    "ci-test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx vitest run",
-    "coverage": "npx make-coverage-badge --output-path ./badges/coverage.svg",
-    "format:write": "npx prettier --write .",
-    "format:check": "npx prettier --check .",
-    "lint": "npx eslint .",
-    "local-action": "npx @github/local-action . src/main.ts .env",
-    "package": "npx rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
-    "package:watch": "pnpm run package -- --watch",
-    "test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx vitest run",
-    "all": "pnpm run format:write && pnpm run lint && pnpm run test && pnpm run coverage && pnpm run package"
-  },
-  "exports": {
-    ".": "./dist/index.js"
-  },
-  "engines": {
-    "node": ">=20"
+  "bugs": {
+    "url": "https://github.com/younis-ahmed/zidsa-action.git/issues"
   },
   "keywords": [
     "zidsa",
     "github-action"
   ],
-  "author": "Younis Ahmed <07430e0e-29c0-4a43-bcd0-c123714a124a@anonaddy.com>",
-  "license": "MIT",
-  "devDependencies": {
-    "@github/local-action": "^3.1.1",
-    "@rollup/plugin-commonjs": "^28.0.3",
-    "@rollup/plugin-node-resolve": "^16.0.1",
-    "@rollup/plugin-typescript": "^12.1.2",
-    "@types/archiver": "^6.0.3",
-    "@types/node": "^22.13.13",
-    "@typescript-eslint/eslint-plugin": "^8.28.0",
-    "@typescript-eslint/parser": "^8.28.0",
-    "@vitest/coverage-istanbul": "^3.0.9",
-    "eslint": "^9.23.0",
-    "make-coverage-badge": "^1.2.0",
-    "rollup": "^4.37.0",
-    "typescript": "^5.8.2",
-    "vitest": "^3.0.9",
-    "@antfu/eslint-config": "^4.11.0",
-    "eslint-plugin-format": "^1.0.1"
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "main": "index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "bundle": "pnpm run format:write && pnpm run package",
+    "ci-test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx vitest run",
+    "coverage": "npx make-coverage-badge --output-path ./badges/coverage.svg",
+    "format:write": "npx eslint --fix .",
+    "format:check": "npx eslint --check .",
+    "lint": "npx eslint .",
+    "local-action": "npx @github/local-action . src/main.ts .env",
+    "package": "npx rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript",
+    "package:watch": "pnpm run package -- --watch",
+    "test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx vitest run",
+    "all": "pnpm run format:write && pnpm run lint && pnpm run package"
   },
   "dependencies": {
     "@actions/core": "^1.11.1",
@@ -65,5 +47,24 @@
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "*"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^4.11.0",
+    "@github/local-action": "^3.1.1",
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@types/archiver": "^6.0.3",
+    "@types/node": "^22.13.13",
+    "@typescript-eslint/eslint-plugin": "^8.28.0",
+    "@typescript-eslint/parser": "^8.28.0",
+    "@vitest/coverage-istanbul": "^3.0.9",
+    "eslint": "^9.23.0",
+    "eslint-plugin-format": "^1.0.1",
+    "make-coverage-badge": "^1.2.0",
+    "rollup": "^4.37.0",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.9"
   }
 }
