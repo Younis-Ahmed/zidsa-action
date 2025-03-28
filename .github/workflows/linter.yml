@@ -56,8 +56,12 @@ jobs:
           VALIDATE_TYPESCRIPT_ES: false
           VALIDATE_JSON: false
           VALIDATE_TYPESCRIPT_STANDARD: false
-          JAVASCRIPT_PRETTIER: false
-          JSON_PRETTIER: false
-          SHELL_SHFMT: false
-          TYPESCRIPT_PRETTIER: false
-          YAML_PRETTIER: false
+          VALIDATE_TYPESCRIPT_PRETTIER: false
+          VALIDATE_YAML_PRETTIER: false
+          VALIDATE_JAVASCRIPT_PRETTIER	: false
+          VALIDATE_JSON_PRETTIER: false
+          VALIDATE_SHELL_SHFMT: false
+          FIX_JAVASCRIPT_PRETTIER: false
+          FIX_JSON_PRETTIER: false
+          FIX_SHELL_SHFMT: false
+          FIX_YAML_PRETTIER: false
