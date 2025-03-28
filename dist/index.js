@@ -40752,6 +40752,7 @@ class Api {
 
 async function login(email, password) {
     return new Api()
+        .reset()
         .addBaseUrl()
         .addRoute('/market/partner-login')
         .addHeaders([{ key: 'Content-Type', value: 'application/json' }])
@@ -82020,6 +82021,7 @@ async function updateTheme(theme_id, theme_path) {
             form.append('change_type', releaseType);
             form.append('release_notes', reason);
             api
+                .reset()
                 .addBaseUrl()
                 .addRoute(`/partners/themes/cli_update/${theme_id}`)
                 .addUserToken()
@@ -82065,6 +82067,9 @@ async function run() {
         const workspacePath = getWorkspacePath();
         await login(variables.EMAIL, variables.PASSWORD);
         await updateTheme(variables.THEME_ID, workspacePath);
+        // Log a success message
+        coreExports.info('Theme updated successfully');
+        coreExports.setOutput('success', 'true');
     }
     catch (error) {
         // Fail the workflow run if an error occurs
