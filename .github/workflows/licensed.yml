@@ -36,9 +36,15 @@ jobs:
           node-version-file: .node-version
           cache: npm
 
+      - name: Setup PNPM
+        id: setup-pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.3
+
       - name: Install Dependencies
         id: npm-ci
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Setup Ruby
         id: setup-ruby
@@ -49,7 +55,7 @@ jobs:
       - uses: licensee/setup-licensed@v1.3.2
         with:
           version: 4.x
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GH_TOKEN }}
 
       # If this is a workflow_dispatch event, update the cached licenses.
       - if: ${{ github.event_name == 'workflow_dispatch' }}

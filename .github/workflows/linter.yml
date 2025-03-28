@@ -30,11 +30,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: .node-version
-          cache: npm
+          cache: pnpm
+
+      - name: Setup PNPM
+        id: setup-pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.3
 
       - name: Install Dependencies
         id: install
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Lint Codebase
         id: super-linter
@@ -42,7 +48,7 @@ jobs:
         env:
           DEFAULT_BRANCH: main
           FILTER_REGEX_EXCLUDE: dist/**/*
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           LINTER_RULES_PATH: ${{ github.workspace }}
           VALIDATE_ALL_CODEBASE: true
           VALIDATE_JAVASCRIPT_ES: false
