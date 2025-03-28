@@ -2,5 +2,5 @@ import antfu from '@antfu/eslint-config'
 
 export default antfu({
   formatters: true,
-  ignores: ['.github/**', 'dist/**'],
+  ignores: ['.github/**', 'dist/**', '.licenses/**'],
 })
