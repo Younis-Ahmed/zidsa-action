@@ -1,0 +1,11 @@
+---
+name: stable-hash
+version: 0.0.5
+type: npm
+summary: Stable JS value hash.
+homepage: 
+license: mit
+licenses:
+- sources: README.md
+  text: Created by Shu Ding. Released under the MIT License.
+notices: []
