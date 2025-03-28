@@ -30,7 +30,7 @@
     "bundle": "pnpm run format:write && pnpm run package",
     "ci-test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx vitest run",
     "coverage": "npx make-coverage-badge --output-path ./badges/coverage.svg",
-    "format:write": "npx eslint --fix .",
+    "format:write": "npx eslint --config eslint.config.js '**/*.{js,ts}'",
     "format:check": "npx eslint .",
     "lint": "npx eslint .",
     "local-action": "npx @github/local-action . src/main.ts .env",
