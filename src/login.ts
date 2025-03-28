@@ -12,6 +12,7 @@ interface LoginResponse {
 
 export async function login(email: string, password: string): Promise<void> {
   return new Api()
+    .reset()
     .addBaseUrl()
     .addRoute('/market/partner-login')
     .addHeaders([{ key: 'Content-Type', value: 'application/json' }])

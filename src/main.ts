@@ -14,6 +14,10 @@ export async function run(): Promise<void> {
     const workspacePath = getWorkspacePath()
     await login(variables.EMAIL, variables.PASSWORD)
     await updateTheme(variables.THEME_ID, workspacePath)
+
+    // Log a success message
+    core.info('Theme updated successfully')
+    core.setOutput('success', 'true')
   }
   catch (error) {
     // Fail the workflow run if an error occurs

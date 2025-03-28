@@ -34,6 +34,7 @@ export default async function updateTheme(
       form.append('release_notes', reason)
 
       api
+        .reset()
         .addBaseUrl()
         .addRoute(`/partners/themes/cli_update/${theme_id}`)
         .addUserToken()
