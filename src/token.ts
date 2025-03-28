@@ -14,7 +14,7 @@ function getToken() {
       return config.access_token
     }
   }
-  logger.error('No session found. Please login first.')
+  logger.log('No session found. Attempting login first.')
   return null
 }
 
