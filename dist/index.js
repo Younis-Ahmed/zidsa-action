@@ -40632,17 +40632,23 @@ function getToken() {
             return config.access_token;
         }
     }
-    logger.error('No session found. Please login first.');
+    logger.log('No session found. Attempting login first.');
     return null;
 }
 function setToken(token) {
-    fs.writeFile(configPath, JSON.stringify({ access_token: token }), (err) => {
-        if (err) {
-            logger.error(`Failed to save token: ${err}`);
-            return false;
+    try {
+        // Create directory if it doesn't exist
+        if (!fs.existsSync(configDir)) {
+            fs.mkdirSync(configDir, { recursive: true });
         }
-    });
-    return true;
+        // Write file synchronously to ensure proper return value
+        fs.writeFileSync(configPath, JSON.stringify({ access_token: token }));
+        return true;
+    }
+    catch (err) {
+        logger.error(`Failed to save token: ${err}`);
+        return false;
+    }
 }
 
 class Api {
@@ -40764,7 +40770,10 @@ async function login(email, password) {
         .send()
         .then(({ partner }) => {
         if (partner && partner['x-partner-token']) {
-            if (!setToken(partner['x-partner-token'])) ;
+            if (!setToken(partner['x-partner-token'])) {
+                logger.error('Failed to save token.');
+                throw new Error('Failed to save token');
+            }
             logger.log('Authentication successful!');
         }
         else {
