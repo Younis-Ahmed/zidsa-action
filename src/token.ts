@@ -19,13 +19,20 @@ function getToken() {
 }
 
 function setToken(token: string) {
-  fs.writeFile(configPath, JSON.stringify({ access_token: token }), (err) => {
-    if (err) {
-      logger.error(`Failed to save token: ${err}`)
-      return false
+  try {
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(configDir)) {
+      fs.mkdirSync(configDir, { recursive: true })
     }
-  })
-  return true
+
+    // Write file synchronously to ensure proper return value
+    fs.writeFileSync(configPath, JSON.stringify({ access_token: token }))
+    return true
+  }
+  catch (err) {
+    logger.error(`Failed to save token: ${err}`)
+    return false
+  }
 }
 
 export { getToken, setToken }
