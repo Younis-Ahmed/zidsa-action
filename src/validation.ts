@@ -89,7 +89,7 @@ function validate_extension(file: string, base_structure_extnames: string[]): st
   return true
 }
 
-function validate_assets_file_size(file: string, filepath: string): void {
+export function validate_assets_file_size(file: string, filepath: string): void {
   const stats = fs.lstatSync(filepath)
   if (stats.size >= sdk.MAX_ASSETS_FILE_SIZE_2MB) {
     logger.warning(
