@@ -21,7 +21,12 @@ export async function run(): Promise<void> {
   }
   catch (error) {
     // Fail the workflow run if an error occurs
-    if (error instanceof Error)
+    if (error instanceof Error) {
       core.setFailed(error.message)
+    }
+    else {
+      // Handle non-Error exceptions too
+      core.setFailed(`An unexpected error occurred: ${String(error)}`)
+    }
   }
 }
