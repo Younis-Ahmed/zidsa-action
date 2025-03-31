@@ -48,7 +48,7 @@ describe('zip_theme', () => {
 
     // Set up directory mocks with appropriate files based on path
     vi.spyOn(fs, 'readdirSync').mockImplementation((dirPath) => {
-      // When checking the root directory, return 'assets' to satisfy validate_structure
+
       if (dirPath === 'build/path') {
         return ['assets', 'index.html', 'style.css'] as any
       }

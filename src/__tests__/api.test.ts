@@ -74,7 +74,6 @@ describe('api', () => {
     })
 
     it('should handle FormData bodies', () => {
-      // Use Node.js FormData instead of browser FormData
       import('form-data').then((FormDataModule) => {
         const FormData = FormDataModule.default || FormDataModule
         const formData = new FormData()

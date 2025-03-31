@@ -37,7 +37,7 @@ describe('validation', () => {
     // Setup SDK stubs for each test with SPECIFIC TEMPLATE FILES
     sdk.structure = {
       root: ['assets', 'templates', 'index.html'],
-      templates: ['product.twig', '404.twig', 'home.twig'], // Changed to specific files
+      templates: ['product.twig', '404.twig', 'home.twig'],
       common: ['.twig'],
       modules: ['.twig'],
       assets: ['.js', '.css', '.svg'],
@@ -62,7 +62,7 @@ describe('validation', () => {
       if (dirPath === '.')
         files = ['assets', 'templates', 'index.html']
       else if (dirPath === './templates')
-        files = ['product.twig', '404.twig', 'home.twig', '.twig'] // Add literal .twig file
+        files = ['product.twig', '404.twig', 'home.twig', '.twig'] 
       else if (dirPath === './assets')
         files = ['main.js', 'style.css', 'logo.svg']
       else
@@ -153,7 +153,7 @@ describe('validation', () => {
     it('should reject when required root files are missing', async () => {
       vi.spyOn(fs, 'readdirSync').mockImplementation((dirPath: any, options?: any) => {
         if (dirPath === '.') {
-          const files = ['assets'] // Missing 'templates' and 'index.html'
+          const files = ['assets'] 
 
           if (options && typeof options === 'object' && options.withFileTypes) {
             return files.map(file => ({
@@ -183,7 +183,7 @@ describe('validation', () => {
         if (dirPath === '.')
           files = ['assets', 'templates', 'index.html']
         else if (dirPath === './templates')
-          files = [] // Empty templates directory
+          files = [] 
 
         if (options && typeof options === 'object' && options.withFileTypes) {
           return files.map(file => ({
@@ -260,10 +260,8 @@ describe('validation', () => {
       // Create a spy on the validateTheme function
       const validateThemeSpy = vi.spyOn(validation, 'validateTheme')
 
-      // Replace the implementation to bypass validate_structure
       validateThemeSpy.mockImplementation(async (build_path: string) => {
-        // This mocked implementation will skip the real validate_structure checks
-        // but still run the asset size validation code
+
 
         // Mock the filesystem access for assets
         vi.spyOn(fs, 'readdirSync').mockImplementation((dirPath) => {
