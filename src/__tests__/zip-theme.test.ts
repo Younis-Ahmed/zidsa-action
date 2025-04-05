@@ -48,7 +48,6 @@ describe('zip_theme', () => {
 
     // Set up directory mocks with appropriate files based on path
     vi.spyOn(fs, 'readdirSync').mockImplementation((dirPath) => {
-
       if (dirPath === 'build/path') {
         return ['assets', 'index.html', 'style.css'] as any
       }
