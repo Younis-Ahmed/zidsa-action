@@ -62,7 +62,7 @@ describe('validation', () => {
       if (dirPath === '.')
         files = ['assets', 'templates', 'index.html']
       else if (dirPath === './templates')
-        files = ['product.twig', '404.twig', 'home.twig', '.twig'] 
+        files = ['product.twig', '404.twig', 'home.twig', '.twig']
       else if (dirPath === './assets')
         files = ['main.js', 'style.css', 'logo.svg']
       else
@@ -153,7 +153,7 @@ describe('validation', () => {
     it('should reject when required root files are missing', async () => {
       vi.spyOn(fs, 'readdirSync').mockImplementation((dirPath: any, options?: any) => {
         if (dirPath === '.') {
-          const files = ['assets'] 
+          const files = ['assets']
 
           if (options && typeof options === 'object' && options.withFileTypes) {
             return files.map(file => ({
@@ -183,7 +183,7 @@ describe('validation', () => {
         if (dirPath === '.')
           files = ['assets', 'templates', 'index.html']
         else if (dirPath === './templates')
-          files = [] 
+          files = []
 
         if (options && typeof options === 'object' && options.withFileTypes) {
           return files.map(file => ({
@@ -261,8 +261,6 @@ describe('validation', () => {
       const validateThemeSpy = vi.spyOn(validation, 'validateTheme')
 
       validateThemeSpy.mockImplementation(async (build_path: string) => {
-
-
         // Mock the filesystem access for assets
         vi.spyOn(fs, 'readdirSync').mockImplementation((dirPath) => {
           if (dirPath === '.')
