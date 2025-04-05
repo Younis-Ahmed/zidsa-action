@@ -40739,7 +40739,7 @@ class Api {
             if (!response.ok) {
                 if (response.status === 401) {
                     logger.error('Token expired, please login again');
-                    return null; // Return null but cast to T
+                    throw new Error('Token expired, please login again');
                 }
                 const data = await response.json();
                 const message = typeof data === 'object' && data !== null && 'message' in data
@@ -40750,8 +40750,20 @@ class Api {
             return (await response.json());
         }
         catch (error) {
-            logger.error(`API request failed: ${JSON.stringify(error)}`);
-            throw error;
+            let errorMessage;
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            }
+            else {
+                try {
+                    errorMessage = JSON.stringify(error);
+                }
+                catch {
+                    errorMessage = String(error);
+                }
+            }
+            logger.error(`API request failed: ${errorMessage}`);
+            throw new Error(errorMessage);
         }
     }
 }
@@ -82082,8 +82094,13 @@ async function run() {
     }
     catch (error) {
         // Fail the workflow run if an error occurs
-        if (error instanceof Error)
+        if (error instanceof Error) {
             coreExports.setFailed(error.message);
+        }
+        else {
+            // Handle non-Error exceptions too
+            coreExports.setFailed(`An unexpected error occurred: ${String(error)}`);
+        }
     }
 }
 
