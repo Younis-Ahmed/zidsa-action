@@ -126,21 +126,22 @@ class Api {
       return (await response.json()) as T
     }
     catch (error) {
-      let errorMessage: string;
+      let errorMessage: string
       if (error instanceof Error) {
-        errorMessage = error.message;
-      } else {
+        errorMessage = error.message
+      }
+      else {
         try {
-          errorMessage = JSON.stringify(error);
-        } catch {
-          errorMessage = String(error);
+          errorMessage = JSON.stringify(error)
+        }
+        catch {
+          errorMessage = String(error)
         }
       }
-      logger.error(`API request failed: ${errorMessage}`);
-      throw new Error(errorMessage);
-    }
+      logger.error(`API request failed: ${errorMessage}`)
+      throw new Error(errorMessage)
     }
   }
-
+}
 
 export default Api
