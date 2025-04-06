@@ -43,12 +43,11 @@ jobs:
 
 ### Inputs
 
-| Name            | Description                                        | Required | Default                             |
-| --------------- | -------------------------------------------------- | :------: | ----------------------------------- |
-| `theme_id`      | The ID of your Zidsa theme                         |   Yes    | -                                   |
-| `EMAIL`         | Your Zidsa account email                |   Yes    | -                                   |
-| `PASSWORD`    | Your Zidsa account password                       |    Yes    | -                               |
-
+| Name       | Description                 | Required | Default |
+| ---------- | --------------------------- | :------: | ------- |
+| `theme_id` | The ID of your Zidsa theme  |   Yes    | -       |
+| `EMAIL`    | Your Zidsa account email    |   Yes    | -       |
+| `PASSWORD` | Your Zidsa account password |   Yes    | -       |
 
 ## Setup
 
@@ -60,7 +59,6 @@ jobs:
 4. Copy the Theme ID from the URL or theme settings
 5. Store it in your GitHub repository secrets as `THEME_ID`
 6. Repeat for `ZIDSA_EMAIL` and `ZIDSA_EMAIL_PASSWORD`
-
 
 ## Development
 
