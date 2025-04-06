@@ -3,8 +3,8 @@ description: Community built action for zidsa
 author: Younis Ahmed
 
 branding:
-  icon: heart
-  color: red
+  icon: command
+  color: purple
 
 inputs:
   EMAIL:
