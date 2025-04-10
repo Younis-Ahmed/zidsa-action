@@ -34,7 +34,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Deploy to Zidsa
-        uses: younis/zidsa-action@v1
+        uses: Younis-Ahmed/zidsa-action@v0.2.0
         with:
           THEME_ID: ${{ secrets.THEME_ID }}
           EMAIL: ${{ secrets.ZIDSA_EMAIL }}
