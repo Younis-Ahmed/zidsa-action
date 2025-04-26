@@ -1,0 +1,14 @@
+---
+name: "@polka/url"
+version: 1.0.0-next.28
+type: npm
+summary: Super fast, memoized `req.url` parser
+homepage: 
+license: mit
+licenses:
+- sources: readme.md
+  text: |-
+    MIT © [Luke Edwards](https://lukeed.com)
+
+    [polka]: https://github.com/lukeed/polka
+notices: []
