@@ -14,6 +14,14 @@ const config = {
     sourcemap: true,
   },
   plugins: [typescript(), nodeResolve({ preferBuiltins: true }), commonjs(), json()],
+  external: [
+    // Keep external dependencies that are provided by the GitHub Actions runner
+    '@actions/core',
+    'archiver',
+    'conventional-changelog-angular',
+    'conventional-recommended-bump',
+    'form-data',
+  ],
 }
 
 export default config
