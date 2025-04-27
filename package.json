@@ -1,7 +1,7 @@
 {
   "name": "zidsa-action",
   "type": "module",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "packageManager": "pnpm@9.12.3",
   "description": "Community built Github Action for zidsa",
@@ -21,7 +21,7 @@
   ],
   "exports": {
     ".": "./dist/index.js"
-  },
+  }, 
   "main": "index.js",
   "engines": {
     "node": ">=20"
