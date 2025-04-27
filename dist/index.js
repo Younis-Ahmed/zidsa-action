@@ -1,42 +1,40 @@
-'use strict';
-
-var require$$0$2 = require('os');
-var require$$0$3 = require('crypto');
-var require$$0$4 = require('fs');
-var require$$1$5 = require('path');
-var require$$2$1 = require('http');
-var require$$3 = require('https');
-var require$$0$8 = require('net');
-var require$$1$1 = require('tls');
-var require$$1 = require('events');
-var require$$0$7 = require('assert');
-var require$$0$5 = require('util');
-var require$$0$9 = require('stream');
-var require$$0$6 = require('buffer');
-var require$$8 = require('querystring');
-var require$$14 = require('stream/web');
-var require$$0$b = require('node:stream');
-var require$$1$2 = require('node:util');
-var require$$0$a = require('node:events');
-var require$$0$c = require('worker_threads');
-var require$$2$2 = require('perf_hooks');
-var require$$5 = require('util/types');
-var require$$4 = require('async_hooks');
-var require$$1$3 = require('console');
-var require$$1$4 = require('url');
-var require$$0$d = require('zlib');
-var require$$6 = require('string_decoder');
-var require$$0$e = require('diagnostics_channel');
-var require$$2$3 = require('child_process');
-var require$$6$1 = require('timers');
-var fs = require('node:fs');
-var node_os = require('node:os');
-var path$1 = require('node:path');
-var process$2 = require('node:process');
-var require$$0$f = require('constants');
-var require$$2$5 = require('node:url');
-var require$$5$1 = require('node:fs/promises');
-var require$$2$4 = require('node:string_decoder');
+import require$$0$2 from 'os';
+import require$$0$3 from 'crypto';
+import require$$0$4 from 'fs';
+import require$$1$5 from 'path';
+import require$$2$1 from 'http';
+import require$$3 from 'https';
+import require$$0$8 from 'net';
+import require$$1$1 from 'tls';
+import require$$1 from 'events';
+import require$$0$7 from 'assert';
+import require$$0$5 from 'util';
+import require$$0$9 from 'stream';
+import require$$0$6 from 'buffer';
+import require$$8 from 'querystring';
+import require$$14 from 'stream/web';
+import require$$0$b from 'node:stream';
+import require$$1$2 from 'node:util';
+import require$$0$a from 'node:events';
+import require$$0$c from 'worker_threads';
+import require$$2$2 from 'perf_hooks';
+import require$$5 from 'util/types';
+import require$$4 from 'async_hooks';
+import require$$1$3 from 'console';
+import require$$1$4 from 'url';
+import require$$0$d from 'zlib';
+import require$$6 from 'string_decoder';
+import require$$0$e from 'diagnostics_channel';
+import require$$2$3, { spawn as spawn$1 } from 'child_process';
+import require$$6$1 from 'timers';
+import fs from 'node:fs';
+import { homedir } from 'node:os';
+import path$1 from 'node:path';
+import process$2 from 'node:process';
+import require$$0$f from 'constants';
+import require$$2$5 from 'node:url';
+import require$$5$1 from 'node:fs/promises';
+import require$$2$4 from 'node:string_decoder';
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -40624,7 +40622,7 @@ const logger = {
     },
 };
 
-const homeDir = node_os.homedir();
+const homeDir = homedir();
 const configDir = path$1.join(homeDir, '.zid-theme');
 const configPath = path$1.join(configDir, 'config.json');
 function getToken() {
@@ -78590,7 +78588,7 @@ function catchProcessError(child) {
  * @yields Stdout chunks.
  */
 async function* stdoutSpawn(cmd, args, options) {
-    const child = require$$2$3.spawn(cmd, args, options);
+    const child = spawn$1(cmd, args, options);
     const errorPromise = catchProcessError(child);
     yield* child.stdout;
     const error = await errorPromise;
@@ -81490,9 +81488,9 @@ class ConventionalGitClient extends GitClient {
             return this.deps;
         }
         this.deps = Promise.all([
-            Promise.resolve().then(function () { return require('./index-CFsunH0d.js'); })
+            import('./index-BTGILruG.js')
                 .then(({ parseCommits }) => parseCommits),
-            Promise.resolve().then(function () { return require('./index-DVRiyBrg.js'); })
+            import('./index-CSRN5mAS.js')
                 .then(({ filterRevertedCommits }) => filterRevertedCommits)
         ]);
         return this.deps;
