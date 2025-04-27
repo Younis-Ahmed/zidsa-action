@@ -14,7 +14,7 @@ const config = {
     sourcemap: true,
   },
   plugins: [typescript(), nodeResolve({ preferBuiltins: true }), commonjs(), json()],
-
+  external: ['conventional-changelog-angular', 'conventional-recommended-bump'],
 }
 
 export default config
