@@ -40737,14 +40737,26 @@ class Api {
             }
             else {
                 try {
-                    errorMessage = JSON.stringify(error);
+                    // Improved error object handling
+                    if (typeof error === 'object' && error !== null) {
+                        // Try to extract meaningful properties from the error object
+                        const errorObj = error;
+                        const details = Object.entries(errorObj)
+                            .filter(([_, value]) => value !== undefined && value !== null)
+                            .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+                            .join(', ');
+                        errorMessage = details || JSON.stringify(error);
+                    }
+                    else {
+                        errorMessage = JSON.stringify(error);
+                    }
                 }
                 catch {
                     errorMessage = String(error);
                 }
             }
             logger.error(`API request failed: ${errorMessage}`);
-            throw new Error(errorMessage);
+            throw new Error(`API error: ${errorMessage}`);
         }
     }
 }
