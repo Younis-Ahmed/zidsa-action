@@ -40591,15 +40591,50 @@ function requireForm_data () {
 var form_dataExports = requireForm_data();
 var FormData = /*@__PURE__*/getDefaultExportFromCjs(form_dataExports);
 
+/**
+ * Formats a message or error object to ensure proper string representation
+ */
+function formatMessage(message) {
+    if (message instanceof Error) {
+        return message.message;
+    }
+    if (typeof message === 'object' && message !== null) {
+        try {
+            return JSON.stringify(message, null, 2);
+        }
+        catch {
+            // If JSON stringify fails, try to extract properties
+            try {
+                const errorObj = message;
+                const details = Object.entries(errorObj)
+                    .filter(([_, value]) => value !== undefined && value !== null)
+                    .map(([key, value]) => {
+                    try {
+                        return `${key}: ${typeof value === 'object' ? JSON.stringify(value) : String(value)}`;
+                    }
+                    catch {
+                        return `${key}: [Complex Value]`;
+                    }
+                })
+                    .join(', ');
+                return details || '[Empty Object]';
+            }
+            catch {
+                return String(message);
+            }
+        }
+    }
+    return String(message);
+}
 const logger = {
     log: (message, properties) => {
-        coreExports.notice(message, properties);
+        coreExports.notice(formatMessage(message), properties);
     },
     error: (message, properties) => {
-        coreExports.error(message, properties);
+        coreExports.error(formatMessage(message), properties);
     },
     warning: (message, properties) => {
-        coreExports.warning(message, properties);
+        coreExports.warning(formatMessage(message), properties);
     },
 };
 
@@ -40710,10 +40745,22 @@ class Api {
     }
     async send() {
         const url = `${this.route}${this.key}${this.params}`;
+        let requestBody;
+        if (this.method !== 'GET') {
+            // Special handling for FormData - don't stringify it
+            if (this.body instanceof FormData) {
+                requestBody = this.body;
+                // When using FormData, let the browser set the Content-Type with boundary
+                delete this.headers['Content-Type'];
+            }
+            else {
+                requestBody = JSON.stringify(this.body);
+            }
+        }
         const options = {
             method: this.method,
             headers: this.headers,
-            body: this.method !== 'GET' ? JSON.stringify(this.body) : undefined,
+            body: requestBody,
         };
         try {
             const response = await fetch(url, options);
@@ -40743,7 +40790,14 @@ class Api {
                         const errorObj = error;
                         const details = Object.entries(errorObj)
                             .filter(([_, value]) => value !== undefined && value !== null)
-                            .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+                            .map(([key, value]) => {
+                            try {
+                                return `${key}: ${typeof value === 'object' ? JSON.stringify(value) : String(value)}`;
+                            }
+                            catch {
+                                return `${key}: [Complex Value]`;
+                            }
+                        })
                             .join(', ');
                         errorMessage = details || JSON.stringify(error);
                     }
@@ -78816,6 +78870,7 @@ async function zip_theme(build_name, build_path) {
     };
 }
 
+/* eslint-disable unused-imports/no-unused-vars */
 async function updateTheme(theme_id, theme_path) {
     process$2.chdir(theme_path);
     const { releaseType, reason } = await zip_theme('theme', theme_path);
@@ -78841,7 +78896,53 @@ async function updateTheme(theme_id, theme_path) {
                 .send()
                 .then(resolve)
                 .catch((err) => {
-                logger.error('Error during API call');
+                // Enhanced error handling with detailed error information
+                let errorDetails;
+                if (err instanceof Error) {
+                    errorDetails = err.message;
+                    // Include stack trace for debugging
+                    logger.error(`API call error: ${err.message}`);
+                    if (err.stack) {
+                        logger.error(`Stack trace: ${err.stack}`);
+                    }
+                }
+                else if (typeof err === 'object' && err !== null) {
+                    try {
+                        // Try to extract meaningful properties from the error object
+                        const errorObj = err;
+                        // Extract response details if available
+                        if ('response' in errorObj && errorObj.response) {
+                            try {
+                                const responseDetails = JSON.stringify(errorObj.response, null, 2);
+                                logger.error(`Response details: ${responseDetails}`);
+                            }
+                            catch (e) {
+                                logger.error('Failed to stringify response details');
+                            }
+                        }
+                        // Format all properties
+                        const details = Object.entries(errorObj)
+                            .filter(([_, value]) => value !== undefined && value !== null)
+                            .map(([key, value]) => {
+                            try {
+                                return `${key}: ${typeof value === 'object' ? JSON.stringify(value) : String(value)}`;
+                            }
+                            catch {
+                                return `${key}: [Complex Value]`;
+                            }
+                        })
+                            .join('\n');
+                        errorDetails = details || JSON.stringify(err, null, 2);
+                    }
+                    catch (e) {
+                        errorDetails = 'Failed to process error object';
+                        logger.error(`Error processing error object: ${e instanceof Error ? e.message : String(e)}`);
+                    }
+                }
+                else {
+                    errorDetails = String(err);
+                }
+                logger.error(`Error during API call: ${errorDetails}`);
                 reject(err); // Reject promise on API error
             });
         });
@@ -78867,6 +78968,7 @@ function getWorkspacePath() {
     return process$2.env.GITHUB_WORKSPACE || '.';
 }
 
+/* eslint-disable unused-imports/no-unused-vars */
 /**
  * The main function for the action.
  *
@@ -78888,8 +78990,17 @@ async function run() {
             coreExports.setFailed(error.message);
         }
         else {
-            // Handle non-Error exceptions too
-            coreExports.setFailed(`An unexpected error occurred: ${String(error)}`);
+            // Improved object error handling
+            try {
+                const errorMessage = typeof error === 'object' && error !== null
+                    ? JSON.stringify(error, null, 2) // Pretty print with indentation
+                    : String(error);
+                coreExports.setFailed(`An unexpected error occurred: ${errorMessage}`);
+            }
+            catch (stringifyError) {
+                // Fallback if JSON.stringify fails
+                coreExports.setFailed(`An unexpected error occurred: ${String(error)}`);
+            }
         }
     }
 }
