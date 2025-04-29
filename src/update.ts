@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars */
 import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
@@ -43,12 +44,56 @@ export default async function updateTheme(
         .send()
         .then(resolve)
         .catch((err) => {
-          // Improved error handling with detailed error information
-          const errorDetails = err instanceof Error
-            ? err.message
-            : typeof err === 'object' && err !== null
-              ? JSON.stringify(err, null, 2)
-              : String(err)
+          // Enhanced error handling with detailed error information
+          let errorDetails: string
+
+          if (err instanceof Error) {
+            errorDetails = err.message
+            // Include stack trace for debugging
+            logger.error(`API call error: ${err.message}`)
+            if (err.stack) {
+              logger.error(`Stack trace: ${err.stack}`)
+            }
+          }
+          else if (typeof err === 'object' && err !== null) {
+            try {
+              // Try to extract meaningful properties from the error object
+              const errorObj = err as Record<string, unknown>
+
+              // Extract response details if available
+              if ('response' in errorObj && errorObj.response) {
+                try {
+                  const responseDetails = JSON.stringify(errorObj.response, null, 2)
+                  logger.error(`Response details: ${responseDetails}`)
+                }
+                catch (e) {
+                  logger.error('Failed to stringify response details')
+                }
+              }
+
+              // Format all properties
+              const details = Object.entries(errorObj)
+                .filter(([_, value]) => value !== undefined && value !== null)
+                .map(([key, value]) => {
+                  try {
+                    return `${key}: ${typeof value === 'object' ? JSON.stringify(value) : String(value)}`
+                  }
+                  catch {
+                    return `${key}: [Complex Value]`
+                  }
+                })
+                .join('\n')
+
+              errorDetails = details || JSON.stringify(err, null, 2)
+            }
+            catch (e) {
+              errorDetails = 'Failed to process error object'
+              logger.error(`Error processing error object: ${e instanceof Error ? e.message : String(e)}`)
+            }
+          }
+          else {
+            errorDetails = String(err)
+          }
 
           logger.error(`Error during API call: ${errorDetails}`)
           reject(err) // Reject promise on API error
