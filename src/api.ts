@@ -100,10 +100,24 @@ class Api {
 
   public async send<T = unknown>(): Promise<T> {
     const url = `${this.route}${this.key}${this.params}`
+    let requestBody: any
+
+    if (this.method !== 'GET') {
+      // Special handling for FormData - don't stringify it
+      if (this.body instanceof FormData) {
+        requestBody = this.body
+        // When using FormData, let the browser set the Content-Type with boundary
+        delete this.headers['Content-Type']
+      }
+      else {
+        requestBody = JSON.stringify(this.body)
+      }
+    }
+
     const options = {
       method: this.method,
       headers: this.headers,
-      body: this.method !== 'GET' ? JSON.stringify(this.body) : undefined,
+      body: requestBody,
     }
 
     try {
@@ -138,7 +152,14 @@ class Api {
             const errorObj = error as Record<string, unknown>
             const details = Object.entries(errorObj)
               .filter(([_, value]) => value !== undefined && value !== null)
-              .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+              .map(([key, value]) => {
+                try {
+                  return `${key}: ${typeof value === 'object' ? JSON.stringify(value) : String(value)}`
+                }
+                catch {
+                  return `${key}: [Complex Value]`
+                }
+              })
               .join(', ')
 
             errorMessage = details || JSON.stringify(error)
