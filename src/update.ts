@@ -43,7 +43,14 @@ export default async function updateTheme(
         .send()
         .then(resolve)
         .catch((err) => {
-          logger.error('Error during API call')
+          // Improved error handling with detailed error information
+          const errorDetails = err instanceof Error
+            ? err.message
+            : typeof err === 'object' && err !== null
+              ? JSON.stringify(err, null, 2)
+              : String(err)
+
+          logger.error(`Error during API call: ${errorDetails}`)
           reject(err) // Reject promise on API error
         })
     })
