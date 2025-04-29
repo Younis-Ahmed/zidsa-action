@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars */
 import * as core from '@actions/core'
 import { login } from './login.js'
 import updateTheme from './update.js'
@@ -25,8 +26,17 @@ export async function run(): Promise<void> {
       core.setFailed(error.message)
     }
     else {
-      // Handle non-Error exceptions too
-      core.setFailed(`An unexpected error occurred: ${String(error)}`)
+      // Improved object error handling
+      try {
+        const errorMessage = typeof error === 'object' && error !== null
+          ? JSON.stringify(error, null, 2)  // Pretty print with indentation
+          : String(error)
+        
+        core.setFailed(`An unexpected error occurred: ${errorMessage}`)
+      } catch (stringifyError) {
+        // Fallback if JSON.stringify fails
+        core.setFailed(`An unexpected error occurred: ${String(error)}`)
+      }
     }
   }
 }
