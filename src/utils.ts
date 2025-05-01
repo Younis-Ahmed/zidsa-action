@@ -19,7 +19,7 @@ export function getVariables<T extends VariableKey>(
 ): Pick<Variables, T> {
   return variables.reduce(
     (acc, variable) => {
-      acc[variable] = getInput(variable)
+      acc[variable] = process.env.ACTIONS_STEP_DEBUG ? (process.env[variable] as string) : getInput(variable, { required: true })
       return acc
     },
     {} as Pick<Variables, T>,
