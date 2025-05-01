@@ -6,8 +6,6 @@ import logger from './logger.js'
 import sdk from './sdk.js'
 import { formatSizeUnits, validateTheme } from './validation.js'
 
-const archive = archiver('zip')
-
 async function zip_theme(build_name: string, build_path: string): Promise<ReturnType<typeof getVersionBump>> {
   const zipfile_path = path.resolve(build_path, `${build_name}.zip`)
 
@@ -19,47 +17,73 @@ async function zip_theme(build_name: string, build_path: string): Promise<Return
     throw new Error(error instanceof Error ? error.message : String(error))
   }
 
-  const output = fs.createWriteStream(zipfile_path)
-
-  output.on('finish', () => {
-    if (archive.pointer() >= sdk.MAX_ZIP_FILE_SIZE_50MB) {
-      fs.rmSync(zipfile_path)
-      logger.warning(`Total size: ${formatSizeUnits(archive.pointer())}`)
-      logger.error(`${build_name}.zip has to be less than 50MB`)
-    }
-
-    logger.log(`Total size: ${formatSizeUnits(archive.pointer())}`)
-    logger.log(`${build_name}.zip successfully created 🎉!\n`)
+  // Create a new archive for each call to avoid reusing a closed archive
+  const archive = archiver('zip', {
+    zlib: { level: 9 }, // Sets the compression level
   })
 
-  archive.pipe(output)
+  // Wrap the zip file creation in a Promise to ensure it completes before continuing
+  await new Promise<void>((resolve, reject) => {
+    const output = fs.createWriteStream(zipfile_path)
 
-  sdk.root_allowed_files.forEach((file) => {
-    const file_path = path.resolve(build_path, file)
+    // Handle errors from the archive
+    archive.on('error', (err) => {
+      logger.error(`Archive error: ${err.message}`)
+      reject(err)
+    })
 
-    if (fs.existsSync(file_path)) {
-      archive.append(fs.createReadStream(file_path), { name: file })
-    }
-  })
+    // Handle errors from the output stream
+    output.on('error', (err) => {
+      logger.error(`Output stream error: ${err.message}`)
+      reject(err)
+    })
 
-  for (const folder in sdk.structure) {
-    const folder_path = path.resolve(build_path, folder)
+    output.on('close', () => {
+      if (archive.pointer() >= sdk.MAX_ZIP_FILE_SIZE_50MB) {
+        fs.rmSync(zipfile_path)
+        logger.warning(`Total size: ${formatSizeUnits(archive.pointer())}`)
+        logger.error(`${build_name}.zip has to be less than 50MB`)
+        reject(new Error(`${build_name}.zip has to be less than 50MB`))
+      }
+      else {
+        logger.log(`Total size: ${formatSizeUnits(archive.pointer())}`)
+        logger.log(`${build_name}.zip successfully created 🎉!\n`)
+        resolve()
+      }
+    })
 
-    if (folder !== 'root' && fs.existsSync(folder_path)) {
-      const files = fs.readdirSync(folder_path)
+    archive.pipe(output)
 
-      archive.append('', { name: `${folder}/` })
+    // Add root allowed files
+    sdk.root_allowed_files.forEach((file) => {
+      const file_path = path.resolve(build_path, file)
 
-      files.forEach((file) => {
-        const file_path = path.resolve(build_path, folder, file)
-        archive.append(fs.createReadStream(file_path), {
-          name: `${folder}/${file}`,
+      if (fs.existsSync(file_path)) {
+        archive.append(fs.createReadStream(file_path), { name: file })
+      }
+    })
+
+    // Add directory structure
+    for (const folder in sdk.structure) {
+      const folder_path = path.resolve(build_path, folder)
+
+      if (folder !== 'root' && fs.existsSync(folder_path)) {
+        const files = fs.readdirSync(folder_path)
+
+        archive.append('', { name: `${folder}/` })
+
+        files.forEach((file) => {
+          const file_path = path.resolve(build_path, folder, file)
+          archive.append(fs.createReadStream(file_path), {
+            name: `${folder}/${file}`,
+          })
         })
-      })
+      }
     }
-  }
 
-  await archive.finalize()
+    // Finalize the archive
+    archive.finalize()
+  })
 
   const bumpRecommendation = await getVersionBump(build_path)
   logger.log(`Version bump recommendation: ${JSON.stringify(bumpRecommendation, null, 2)}`)
