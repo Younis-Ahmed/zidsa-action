@@ -31,12 +31,12 @@ import fs from 'node:fs';
 import { homedir } from 'node:os';
 import * as path$1 from 'node:path';
 import path__default from 'node:path';
-import process$2 from 'node:process';
 import require$$0$f from 'constants';
 import require$$2$5 from 'node:url';
 import require$$5$1 from 'node:fs/promises';
 import require$$2$4 from 'node:string_decoder';
 import { execSync } from 'node:child_process';
+import process$2 from 'node:process';
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -40746,64 +40746,94 @@ class Api {
     async send() {
         const url = `${this.route}${this.key}${this.params}`;
         let requestBody;
+        let formHeaders = {};
         if (this.method !== 'GET') {
             // Special handling for FormData - don't stringify it
             if (this.body instanceof FormData) {
                 requestBody = this.body;
-                // When using FormData, let the browser set the Content-Type with boundary
+                // When using FormData with node-fetch, we need to get the headers from the FormData object
+                // This is critical because it includes the correct content-type with boundary
+                try {
+                    formHeaders = this.body.getHeaders ? this.body.getHeaders() : {};
+                    logger.log('Using FormData headers for request');
+                }
+                catch (err) {
+                    logger.error(`Failed to get FormData headers: ${err instanceof Error ? err.message : String(err)}`);
+                }
+                // Remove our manually set Content-Type to avoid conflict with the FormData generated one
                 delete this.headers['Content-Type'];
             }
             else {
                 requestBody = JSON.stringify(this.body);
+                this.headers['Content-Type'] = 'application/json';
             }
         }
         const options = {
             method: this.method,
-            headers: this.headers,
+            headers: {
+                ...this.headers,
+                ...formHeaders, // Merge in the FormData headers which include the proper boundary
+            },
             body: requestBody,
         };
         try {
+            // Log request details for debugging
+            logger.log(`Making request to: ${url}`);
+            logger.log(`Request method: ${this.method}`);
             const response = await fetch(url, options);
             if (!response.ok) {
                 if (response.status === 401) {
                     logger.error('Token expired, please login again');
                     throw new Error('Token expired, please login again');
                 }
-                const data = await response.json();
-                const message = typeof data === 'object' && data !== null && 'message' in data
-                    ? data.message
-                    : `Request failed with status ${response.status}`;
-                throw new Error(message);
+                let errorMessage = '';
+                try {
+                    // Try to parse error as JSON
+                    const data = await response.json();
+                    errorMessage = typeof data === 'object' ? JSON.stringify(data) : String(data);
+                }
+                catch {
+                    try {
+                        // Fallback: try to get text
+                        const text = await response.text();
+                        errorMessage = text;
+                    }
+                    catch {
+                        errorMessage = `Request failed with status ${response.status}`;
+                    }
+                }
+                logger.error(`API request failed: ${errorMessage}`);
+                throw new Error(errorMessage);
             }
             return (await response.json());
         }
         catch (error) {
-            let errorMessage;
-            if (error instanceof Error) {
+            let errorMessage = '';
+            // Try to extract error details from fetch Response object
+            if (error && typeof error === 'object' && ('json' in error || 'text' in error)) {
+                try {
+                    if ('json' in error && typeof error.json === 'function') {
+                        const data = await error.json();
+                        errorMessage = typeof data === 'object' ? JSON.stringify(data) : String(data);
+                    }
+                    else if ('text' in error && typeof error.text === 'function') {
+                        const text = await error.text();
+                        errorMessage = text;
+                    }
+                    else {
+                        errorMessage = '[Unknown fetch error object]';
+                    }
+                }
+                catch {
+                    errorMessage = '[Unable to parse error response]';
+                }
+            }
+            else if (error instanceof Error) {
                 errorMessage = error.message;
             }
             else {
                 try {
-                    // Improved error object handling
-                    if (typeof error === 'object' && error !== null) {
-                        // Try to extract meaningful properties from the error object
-                        const errorObj = error;
-                        const details = Object.entries(errorObj)
-                            .filter(([_, value]) => value !== undefined && value !== null)
-                            .map(([key, value]) => {
-                            try {
-                                return `${key}: ${typeof value === 'object' ? JSON.stringify(value) : String(value)}`;
-                            }
-                            catch {
-                                return `${key}: [Complex Value]`;
-                            }
-                        })
-                            .join(', ');
-                        errorMessage = details || JSON.stringify(error);
-                    }
-                    else {
-                        errorMessage = JSON.stringify(error);
-                    }
+                    errorMessage = JSON.stringify(error);
                 }
                 catch {
                     errorMessage = String(error);
@@ -40841,7 +40871,23 @@ async function login(email, password) {
         }
     })
         .catch((error) => {
-        logger.error('Authentication failed');
+        if (error instanceof Error) {
+            logger.error(`Authentication failed: ${error.message}`);
+            if (error.stack) {
+                logger.error(`Stack trace: ${error.stack}`);
+            }
+        }
+        else if (typeof error === 'object' && error !== null) {
+            try {
+                logger.error(`Authentication failed: ${JSON.stringify(error)}`);
+            }
+            catch {
+                logger.error('Authentication failed: [Unstringifiable error object]');
+            }
+        }
+        else {
+            logger.error(`Authentication failed: ${String(error)}`);
+        }
         throw error;
     });
 }
@@ -78822,7 +78868,6 @@ function formatSizeUnits(bytes) {
     return '0 bytes';
 }
 
-const archive = archiver('zip');
 async function zip_theme(build_name, build_path) {
     const zipfile_path = path__default.resolve(build_path, `${build_name}.zip`);
     try {
@@ -78832,37 +78877,61 @@ async function zip_theme(build_name, build_path) {
     catch (error) {
         throw new Error(error instanceof Error ? error.message : String(error));
     }
-    const output = fs.createWriteStream(zipfile_path);
-    output.on('finish', () => {
-        if (archive.pointer() >= sdk.MAX_ZIP_FILE_SIZE_50MB) {
-            fs.rmSync(zipfile_path);
-            logger.warning(`Total size: ${formatSizeUnits(archive.pointer())}`);
-            logger.error(`${build_name}.zip has to be less than 50MB`);
-        }
-        logger.log(`Total size: ${formatSizeUnits(archive.pointer())}`);
-        logger.log(`${build_name}.zip successfully created 🎉!\n`);
+    // Create a new archive for each call to avoid reusing a closed archive
+    const archive = archiver('zip', {
+        zlib: { level: 9 }, // Sets the compression level
     });
-    archive.pipe(output);
-    sdk.root_allowed_files.forEach((file) => {
-        const file_path = path__default.resolve(build_path, file);
-        if (fs.existsSync(file_path)) {
-            archive.append(fs.createReadStream(file_path), { name: file });
-        }
-    });
-    for (const folder in sdk.structure) {
-        const folder_path = path__default.resolve(build_path, folder);
-        if (folder !== 'root' && fs.existsSync(folder_path)) {
-            const files = fs.readdirSync(folder_path);
-            archive.append('', { name: `${folder}/` });
-            files.forEach((file) => {
-                const file_path = path__default.resolve(build_path, folder, file);
-                archive.append(fs.createReadStream(file_path), {
-                    name: `${folder}/${file}`,
+    // Wrap the zip file creation in a Promise to ensure it completes before continuing
+    await new Promise((resolve, reject) => {
+        const output = fs.createWriteStream(zipfile_path);
+        // Handle errors from the archive
+        archive.on('error', (err) => {
+            logger.error(`Archive error: ${err.message}`);
+            reject(err);
+        });
+        // Handle errors from the output stream
+        output.on('error', (err) => {
+            logger.error(`Output stream error: ${err.message}`);
+            reject(err);
+        });
+        output.on('close', () => {
+            if (archive.pointer() >= sdk.MAX_ZIP_FILE_SIZE_50MB) {
+                fs.rmSync(zipfile_path);
+                logger.warning(`Total size: ${formatSizeUnits(archive.pointer())}`);
+                logger.error(`${build_name}.zip has to be less than 50MB`);
+                reject(new Error(`${build_name}.zip has to be less than 50MB`));
+            }
+            else {
+                logger.log(`Total size: ${formatSizeUnits(archive.pointer())}`);
+                logger.log(`${build_name}.zip successfully created 🎉!\n`);
+                resolve();
+            }
+        });
+        archive.pipe(output);
+        // Add root allowed files
+        sdk.root_allowed_files.forEach((file) => {
+            const file_path = path__default.resolve(build_path, file);
+            if (fs.existsSync(file_path)) {
+                archive.append(fs.createReadStream(file_path), { name: file });
+            }
+        });
+        // Add directory structure
+        for (const folder in sdk.structure) {
+            const folder_path = path__default.resolve(build_path, folder);
+            if (folder !== 'root' && fs.existsSync(folder_path)) {
+                const files = fs.readdirSync(folder_path);
+                archive.append('', { name: `${folder}/` });
+                files.forEach((file) => {
+                    const file_path = path__default.resolve(build_path, folder, file);
+                    archive.append(fs.createReadStream(file_path), {
+                        name: `${folder}/${file}`,
+                    });
                 });
-            });
+            }
         }
-    }
-    await archive.finalize();
+        // Finalize the archive
+        archive.finalize();
+    });
     const bumpRecommendation = await getVersionBump(build_path);
     logger.log(`Version bump recommendation: ${JSON.stringify(bumpRecommendation, null, 2)}`);
     return {
@@ -78870,83 +78939,56 @@ async function zip_theme(build_name, build_path) {
     };
 }
 
-/* eslint-disable unused-imports/no-unused-vars */
 async function updateTheme(theme_id, theme_path) {
-    process$2.chdir(theme_path);
+    // Don't change directory as it can cause path resolution issues
+    // Let's use absolute paths instead
+    // Run the zip theme function - this now guarantees the zip is complete before continuing
     const { releaseType, reason } = await zip_theme('theme', theme_path);
-    const api = new Api();
-    const form = new FormData();
-    const fileStream = fs.createReadStream(theme_path);
-    return new Promise((resolve, reject) => {
-        fileStream.on('error', (err) => {
-            logger.error('File stream error');
-            reject(err); // Reject promise on stream error
-        });
-        fileStream.on('open', () => {
-            form.append('theme_file', fileStream, path__default.basename(theme_path));
-            form.append('change_type', releaseType);
-            form.append('release_notes', reason);
-            api
-                .reset()
-                .addBaseUrl()
-                .addRoute(`/partners/themes/cli_update/${theme_id}`)
-                .addUserToken()
-                .addFormData(form)
-                .post()
-                .send()
-                .then(resolve)
-                .catch((err) => {
-                // Enhanced error handling with detailed error information
-                let errorDetails;
-                if (err instanceof Error) {
-                    errorDetails = err.message;
-                    // Include stack trace for debugging
-                    logger.error(`API call error: ${err.message}`);
-                    if (err.stack) {
-                        logger.error(`Stack trace: ${err.stack}`);
-                    }
-                }
-                else if (typeof err === 'object' && err !== null) {
-                    try {
-                        // Try to extract meaningful properties from the error object
-                        const errorObj = err;
-                        // Extract response details if available
-                        if ('response' in errorObj && errorObj.response) {
-                            try {
-                                const responseDetails = JSON.stringify(errorObj.response, null, 2);
-                                logger.error(`Response details: ${responseDetails}`);
-                            }
-                            catch (e) {
-                                logger.error('Failed to stringify response details');
-                            }
-                        }
-                        // Format all properties
-                        const details = Object.entries(errorObj)
-                            .filter(([_, value]) => value !== undefined && value !== null)
-                            .map(([key, value]) => {
-                            try {
-                                return `${key}: ${typeof value === 'object' ? JSON.stringify(value) : String(value)}`;
-                            }
-                            catch {
-                                return `${key}: [Complex Value]`;
-                            }
-                        })
-                            .join('\n');
-                        errorDetails = details || JSON.stringify(err, null, 2);
-                    }
-                    catch (e) {
-                        errorDetails = 'Failed to process error object';
-                        logger.error(`Error processing error object: ${e instanceof Error ? e.message : String(e)}`);
-                    }
-                }
-                else {
-                    errorDetails = String(err);
-                }
-                logger.error(`Error during API call: ${errorDetails}`);
-                reject(err); // Reject promise on API error
-            });
-        });
-    });
+    // Get the absolute path to the zip file
+    const zipFilePath = path__default.resolve(theme_path, 'theme.zip');
+    // Verify the zip file exists
+    if (!fs.existsSync(zipFilePath)) {
+        const errorMsg = `Zip file not found at: ${zipFilePath}`;
+        logger.error(errorMsg);
+        throw new Error(errorMsg);
+    }
+    logger.log(`Uploading theme zip file: ${zipFilePath}`);
+    try {
+        // Create form data
+        const form = new FormData();
+        // Add the zip file to the form
+        const fileStream = fs.createReadStream(zipFilePath);
+        form.append('theme_file', fileStream, 'theme.zip');
+        // Add other required form fields
+        form.append('change_type', releaseType);
+        form.append('release_notes', reason);
+        // Create API instance
+        const api = new Api();
+        // Make the API request
+        const result = await api
+            .reset()
+            .addBaseUrl()
+            .addRoute(`/partners/themes/cli_update/${theme_id}`)
+            .addUserToken()
+            .addFormData(form)
+            .post()
+            .send();
+        logger.log('Theme update API request successful');
+        return result;
+    }
+    catch (error) {
+        // Handle errors
+        if (error instanceof Error) {
+            logger.error(`Theme update failed: ${error.message}`);
+            if (error.stack) {
+                logger.error(`Stack trace: ${error.stack}`);
+            }
+        }
+        else {
+            logger.error(`Theme update failed with unexpected error: ${String(error)}`);
+        }
+        throw error;
+    }
 }
 
 /**
@@ -78956,7 +78998,7 @@ async function updateTheme(theme_id, theme_path) {
  */
 function getVariables(variables) {
     return variables.reduce((acc, variable) => {
-        acc[variable] = coreExports.getInput(variable);
+        acc[variable] = process$2.env.ACTIONS_STEP_DEBUG ? process$2.env[variable] : coreExports.getInput(variable, { required: true });
         return acc;
     }, {});
 }
@@ -78978,6 +79020,7 @@ async function run() {
     try {
         const variables = getVariables(['EMAIL', 'PASSWORD', 'THEME_ID']);
         const workspacePath = getWorkspacePath();
+        coreExports.info(`variables: ${JSON.stringify(variables)}`);
         await login(variables.EMAIL, variables.PASSWORD);
         await updateTheme(variables.THEME_ID, workspacePath);
         // Log a success message
