@@ -48,6 +48,9 @@ export default async function updateTheme(
     // Create API instance
     const api = new Api()
 
+    // Get FormData headers (important for boundary)
+    const formHeaders = form.getHeaders()
+
     // Make the API request
     const result = await api
       .reset()
@@ -55,6 +58,7 @@ export default async function updateTheme(
       .addRoute(`/partners/themes/cli_update/${theme_id}`)
       .addUserToken()
       .addFormData(form)
+      .addHeaders(Object.entries(formHeaders).map(([key, value]) => ({ key, value })))
       .post()
       .send()
 
