@@ -101,26 +101,45 @@ class Api {
   public async send<T = unknown>(): Promise<T> {
     const url = `${this.route}${this.key}${this.params}`
     let requestBody: any
+    let formHeaders = {}
 
     if (this.method !== 'GET') {
       // Special handling for FormData - don't stringify it
       if (this.body instanceof FormData) {
         requestBody = this.body
-        // When using FormData, let the browser set the Content-Type with boundary
+
+        // When using FormData with node-fetch, we need to get the headers from the FormData object
+        // This is critical because it includes the correct content-type with boundary
+        try {
+          formHeaders = this.body.getHeaders ? this.body.getHeaders() : {}
+          logger.log('Using FormData headers for request')
+        }
+        catch (err) {
+          logger.error(`Failed to get FormData headers: ${err instanceof Error ? err.message : String(err)}`)
+        }
+
+        // Remove our manually set Content-Type to avoid conflict with the FormData generated one
         delete this.headers['Content-Type']
       }
       else {
         requestBody = JSON.stringify(this.body)
+        this.headers['Content-Type'] = 'application/json'
       }
     }
 
     const options = {
       method: this.method,
-      headers: this.headers,
+      headers: {
+        ...this.headers,
+        ...formHeaders, // Merge in the FormData headers which include the proper boundary
+      },
       body: requestBody,
     }
 
     try {
+      // Log request details for debugging
+      logger.log(`Making request to: ${url}`)
+      logger.log(`Request method: ${this.method}`)
       const response = await fetch(url, options)
 
       if (!response.ok) {
@@ -128,45 +147,55 @@ class Api {
           logger.error('Token expired, please login again')
           throw new Error('Token expired, please login again')
         }
-
-        const data = await response.json()
-        const message
-          = typeof data === 'object' && data !== null && 'message' in data
-            ? (data.message as string)
-            : `Request failed with status ${response.status}`
-        throw new Error(message)
+        let errorMessage = ''
+        try {
+          // Try to parse error as JSON
+          const data = await response.json()
+          errorMessage = typeof data === 'object' ? JSON.stringify(data) : String(data)
+        }
+        catch {
+          try {
+            // Fallback: try to get text
+            const text = await response.text()
+            errorMessage = text
+          }
+          catch {
+            errorMessage = `Request failed with status ${response.status}`
+          }
+        }
+        logger.error(`API request failed: ${errorMessage}`)
+        throw new Error(errorMessage)
       }
 
       return (await response.json()) as T
     }
     catch (error) {
-      let errorMessage: string
-      if (error instanceof Error) {
+      let errorMessage: string = ''
+      // Try to extract error details from fetch Response object
+      if (error && typeof error === 'object' && ('json' in error || 'text' in error)) {
+        try {
+          if ('json' in error && typeof error.json === 'function') {
+            const data = await error.json()
+            errorMessage = typeof data === 'object' ? JSON.stringify(data) : String(data)
+          }
+          else if ('text' in error && typeof error.text === 'function') {
+            const text = await error.text()
+            errorMessage = text
+          }
+          else {
+            errorMessage = '[Unknown fetch error object]'
+          }
+        }
+        catch {
+          errorMessage = '[Unable to parse error response]'
+        }
+      }
+      else if (error instanceof Error) {
         errorMessage = error.message
       }
       else {
         try {
-          // Improved error object handling
-          if (typeof error === 'object' && error !== null) {
-            // Try to extract meaningful properties from the error object
-            const errorObj = error as Record<string, unknown>
-            const details = Object.entries(errorObj)
-              .filter(([_, value]) => value !== undefined && value !== null)
-              .map(([key, value]) => {
-                try {
-                  return `${key}: ${typeof value === 'object' ? JSON.stringify(value) : String(value)}`
-                }
-                catch {
-                  return `${key}: [Complex Value]`
-                }
-              })
-              .join(', ')
-
-            errorMessage = details || JSON.stringify(error)
-          }
-          else {
-            errorMessage = JSON.stringify(error)
-          }
+          errorMessage = JSON.stringify(error)
         }
         catch {
           errorMessage = String(error)
