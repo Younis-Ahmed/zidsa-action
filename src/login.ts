@@ -36,7 +36,23 @@ export async function login(email: string, password: string): Promise<void> {
       }
     })
     .catch((error) => {
-      logger.error('Authentication failed')
+      if (error instanceof Error) {
+        logger.error(`Authentication failed: ${error.message}`)
+        if (error.stack) {
+          logger.error(`Stack trace: ${error.stack}`)
+        }
+      }
+      else if (typeof error === 'object' && error !== null) {
+        try {
+          logger.error(`Authentication failed: ${JSON.stringify(error)}`)
+        }
+        catch {
+          logger.error('Authentication failed: [Unstringifiable error object]')
+        }
+      }
+      else {
+        logger.error(`Authentication failed: ${String(error)}`)
+      }
       throw error
     })
 }
