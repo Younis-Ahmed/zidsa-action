@@ -110,6 +110,8 @@ describe('login()', () => {
       .rejects
       .toThrow('Network error')
 
-    expect(logger.error).toHaveBeenCalledWith('Authentication failed')
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.stringContaining('Authentication failed: Network error'),
+    )
   })
 })
