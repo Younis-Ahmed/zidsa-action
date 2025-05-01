@@ -13,6 +13,7 @@ export async function run(): Promise<void> {
   try {
     const variables = getVariables(['EMAIL', 'PASSWORD', 'THEME_ID'])
     const workspacePath = getWorkspacePath()
+    core.info(`variables: ${JSON.stringify(variables)}`)
     await login(variables.EMAIL, variables.PASSWORD)
     await updateTheme(variables.THEME_ID, workspacePath)
 
@@ -29,11 +30,12 @@ export async function run(): Promise<void> {
       // Improved object error handling
       try {
         const errorMessage = typeof error === 'object' && error !== null
-          ? JSON.stringify(error, null, 2)  // Pretty print with indentation
+          ? JSON.stringify(error, null, 2) // Pretty print with indentation
           : String(error)
-        
+
         core.setFailed(`An unexpected error occurred: ${errorMessage}`)
-      } catch (stringifyError) {
+      }
+      catch (stringifyError) {
         // Fallback if JSON.stringify fails
         core.setFailed(`An unexpected error occurred: ${String(error)}`)
       }
