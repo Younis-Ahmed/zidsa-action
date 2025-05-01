@@ -9,8 +9,11 @@ const archiverMock = vi.hoisted(() => ({
   pipe: vi.fn(),
   append: vi.fn(),
   pointer: vi.fn(() => 1024),
-  finalize: vi.fn().mockResolvedValue(undefined),
-  on: vi.fn(),
+  finalize: vi.fn().mockImplementation(() => Promise.resolve()),
+  on: vi.fn((event, cb) => {
+    if (event === 'finish')
+      setTimeout(cb, 0)
+  }),
 }))
 
 // Mock external modules
@@ -55,13 +58,15 @@ describe('zip_theme', () => {
       return ['index.html', 'style.css'] as any
     })
 
-    // Mock fs.createWriteStream to simulate 'finish' event
+    // Mock fs.createWriteStream to simulate 'finish' and 'close' events
     vi.spyOn(fs, 'createWriteStream').mockImplementation((_path) => {
       return {
         on: (event: string, cb: () => void) => {
-          if (event === 'finish')
-            cb()
+          if (event === 'finish' || event === 'close') {
+            setTimeout(cb, 0)
+          }
         },
+        end: vi.fn(),
       } as any
     })
 
@@ -128,7 +133,7 @@ describe('zip_theme', () => {
     const build_name = 'theme'
     const build_path = 'build/path'
 
-    await zip_theme(build_name, build_path)
+    await expect(zip_theme(build_name, build_path)).rejects.toThrowError(`${build_name}.zip has to be less than 50MB`)
 
     // Verify rmSync was called to remove oversized zip file
     expect(rmSyncMock).toHaveBeenCalledWith(`${process.cwd()}/${build_path}/${build_name}.zip`)
