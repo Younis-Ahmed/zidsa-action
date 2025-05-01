@@ -1,4 +1,4 @@
-import fs from 'node:fs'
+import * as fs from 'node:fs'
 import process from 'node:process'
 import FormData from 'form-data'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -9,11 +9,14 @@ import zip_theme from '../zip-theme.js'
 const sendMock = vi.fn()
 
 // Mock dependencies
-vi.mock('node:fs', () => ({
-  default: {
+vi.mock('node:fs', async (importOriginal) => {
+  const actual = await importOriginal() as typeof import('node:fs')
+  return {
+    ...actual,
     createReadStream: vi.fn(),
-  },
-}))
+    existsSync: vi.fn().mockReturnValue(true),
+  }
+})
 
 vi.mock('node:process', () => ({
   default: {
@@ -76,16 +79,14 @@ describe('updateTheme', () => {
 
     vi.mocked(FormData).mockClear()
 
-    mockFileStream = {
-      on: vi.fn().mockImplementation((event: string, callback: any) => {
-        if (event === 'open') {
-          setTimeout(() => callback(), 0)
-        }
-        return mockFileStream
-      }),
-    }
+    // Create mockFileStream as a plain object with an .on method
+    mockFileStream = { on: vi.fn() } as any
 
+    // Set up fs mocks only once using vi.mocked
     vi.mocked(fs.createReadStream).mockReturnValue(mockFileStream as any)
+    vi.mocked(fs.existsSync).mockImplementation((path: fs.PathLike) => {
+      return path.toString() === '/path/to/theme' || path.toString() === '/path/to/theme/theme.zip'
+    })
 
     sendMock.mockResolvedValue(mockApiResponse)
 
@@ -101,7 +102,7 @@ describe('updateTheme', () => {
   }
 
   it('should handle file stream errors', async () => {
-    const mockError = new Error('File stream error')
+    const mockError = new Error('Zip file not found at: /path/to/theme/theme.zip')
 
     mockFileStream.on.mockImplementation((event: string, callback: any) => {
       if (event === 'error') {
@@ -110,7 +111,9 @@ describe('updateTheme', () => {
       return mockFileStream
     })
 
-    await expect(setupAndRunUpdateTheme()).rejects.toThrow(mockError)
-    expect(logger.error).toHaveBeenCalledWith('File stream error')
+    await expect(setupAndRunUpdateTheme()).rejects.toThrowError(mockError)
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.stringContaining('Zip file not found at: /path/to/theme/theme.zip'),
+    )
   })
 })
