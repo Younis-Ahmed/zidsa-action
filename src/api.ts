@@ -35,7 +35,6 @@ class Api {
 
   public addFormData(formData: FormData) {
     this.body = formData
-    this.headers['Content-Type'] = 'multipart/form-data'
     return this
   }
 
