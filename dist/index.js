@@ -40691,7 +40691,6 @@ class Api {
     }
     addFormData(formData) {
         this.body = formData;
-        this.headers['Content-Type'] = 'multipart/form-data';
         return this;
     }
     addKey(key) {
@@ -78964,6 +78963,8 @@ async function updateTheme(theme_id, theme_path) {
         form.append('release_notes', reason);
         // Create API instance
         const api = new Api();
+        // Get FormData headers (important for boundary)
+        const formHeaders = form.getHeaders();
         // Make the API request
         const result = await api
             .reset()
@@ -78971,6 +78972,7 @@ async function updateTheme(theme_id, theme_path) {
             .addRoute(`/partners/themes/cli_update/${theme_id}`)
             .addUserToken()
             .addFormData(form)
+            .addHeaders(Object.entries(formHeaders).map(([key, value]) => ({ key, value })))
             .post()
             .send();
         logger.log('Theme update API request successful');
