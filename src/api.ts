@@ -107,7 +107,7 @@ class Api {
       // Special handling for FormData - convert it to a buffer for compatibility with fetch
       if (this.body instanceof FormData) {
         requestBody = await new Promise((resolve, reject) => {
-          const formData = this.body as FormData;
+          const formData = this.body as FormData
           const chunks: Buffer[] = []
           formData.on('data', chunk => chunks.push(chunk))
           formData.on('end', () => resolve(Buffer.concat(chunks)))
