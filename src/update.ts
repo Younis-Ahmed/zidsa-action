@@ -45,6 +45,7 @@ export default async function updateTheme(
     form.append('change_type', releaseType)
     form.append('release_notes', reason)
 
+    logger.log(`Form data: ${JSON.stringify(form)}`)
     // Create API instance
     const api = new Api()
 
