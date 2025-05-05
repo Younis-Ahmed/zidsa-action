@@ -1,3 +1,4 @@
+/* eslint-disable node/prefer-global/buffer */
 import FormData from 'form-data'
 import logger from './logger.js'
 import { getToken } from './token.js'
@@ -103,15 +104,19 @@ class Api {
     let formHeaders = {}
 
     if (this.method !== 'GET') {
-      // Special handling for FormData - don't stringify it
+      // Special handling for FormData - convert it to a buffer for compatibility with fetch
       if (this.body instanceof FormData) {
-        requestBody = this.body
+        requestBody = await new Promise((resolve, reject) => {
+          const formData = this.body as FormData;
+          const chunks: Buffer[] = []
+          formData.on('data', chunk => chunks.push(chunk))
+          formData.on('end', () => resolve(Buffer.concat(chunks)))
+          formData.on('error', err => reject(err))
+        })
 
-        // When using FormData with node-fetch, we need to get the headers from the FormData object
-        // This is critical because it includes the correct content-type with boundary
         try {
           formHeaders = this.body.getHeaders ? this.body.getHeaders() : {}
-          logger.log('Using FormData headers for request')
+          logger.log(`Using FormData headers for request ${JSON.stringify(formHeaders)}`)
         }
         catch (err) {
           logger.error(`Failed to get FormData headers: ${err instanceof Error ? err.message : String(err)}`)
