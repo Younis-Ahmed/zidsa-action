@@ -78946,57 +78946,45 @@ async function zip_theme(build_name, build_path) {
 async function updateTheme(theme_id, theme_path) {
     // Don't change directory as it can cause path resolution issues
     // Let's use absolute paths instead
-    // Run the zip theme function - this now guarantees the zip is complete before continuing
     const { releaseType, reason } = await zip_theme('theme', theme_path);
-    // Get the absolute path to the zip file
     const zipFilePath = path__default.resolve(theme_path, 'theme.zip');
-    // Verify the zip file exists
     if (!fs.existsSync(zipFilePath)) {
         const errorMsg = `Zip file not found at: ${zipFilePath}`;
         logger.error(errorMsg);
         throw new Error(errorMsg);
     }
     logger.log(`Uploading theme zip file: ${zipFilePath}`);
-    try {
-        // Create form data
-        const form = new FormData();
-        // Add the zip file to the form
-        const fileStream = fs.createReadStream(zipFilePath);
-        form.append('theme_file', fileStream, 'theme.zip');
-        // Add other required form fields
-        form.append('change_type', releaseType);
-        form.append('release_notes', reason);
-        logger.log(`Form data: ${JSON.stringify(form)}`);
-        // Create API instance
-        const api = new Api();
-        // Get FormData headers (important for boundary)
-        const formHeaders = form.getHeaders();
-        // Make the API request
-        const result = await api
-            .reset()
-            .addBaseUrl()
-            .addRoute(`/partners/themes/cli_update/${theme_id}`)
-            .addUserToken()
-            .addFormData(form)
-            .addHeaders(Object.entries(formHeaders).map(([key, value]) => ({ key, value })))
-            .post()
-            .send();
-        logger.log('Theme update API request successful');
-        return result;
-    }
-    catch (error) {
-        // Handle errors
-        if (error instanceof Error) {
-            logger.error(`Theme update failed: ${error.message}`);
-            if (error.stack) {
-                logger.error(`Stack trace: ${error.stack}`);
-            }
-        }
-        else {
-            logger.error(`Theme update failed with unexpected error: ${String(error)}`);
-        }
-        throw error;
-    }
+    const form = new FormData();
+    const api = new Api();
+    const fileStream = fs.createReadStream(zipFilePath);
+    return new Promise((resolve, reject) => {
+        fileStream.on('error', (err) => {
+            logger.error('File stream error');
+            reject(err);
+        });
+        fileStream.on('open', () => {
+            form.append('theme_file', fileStream, 'theme.zip');
+            form.append('change_type', releaseType);
+            form.append('release_notes', reason);
+            const formHeaders = form.getHeaders();
+            api.reset()
+                .addBaseUrl()
+                .addRoute(`/partners/themes/cli_update/${theme_id}`)
+                .addUserToken()
+                .addFormData(form)
+                .addHeaders(Object.entries(formHeaders).map(([key, value]) => ({ key, value })))
+                .post()
+                .send()
+                .then((result) => {
+                logger.log('Theme update API request successful');
+                resolve(result);
+            })
+                .catch((err) => {
+                logger.error('Error during API call');
+                reject(err);
+            });
+        });
+    });
 }
 
 /**
