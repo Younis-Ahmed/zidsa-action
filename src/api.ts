@@ -36,7 +36,7 @@ class Api {
 
   public addFormData(formData: FormData) {
     this.body = formData
-    this.headers['Content-Type'] = 'multipart/form-data'
+    this.body instanceof FormData ? this.headers['Content-Type'] = 'multipart/form-data' : this.headers['Content-Type'] = 'application/json'
     return this
   }
 
