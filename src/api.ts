@@ -144,6 +144,14 @@ class Api {
       // Log request details for debugging
       logger.log(`Making request to: ${url}`)
       logger.log(`Request method: ${this.method}`)
+      logger.log(`Request headers: ${JSON.stringify(options.headers, null, 2)}`)
+      logger.log(`Request body: ${requestBody}`)
+      logger.log(`Request params: ${this.params}`)
+      logger.log(`Request key: ${this.key}`)
+      logger.log(`Request body: ${requestBody}`)
+      logger.log(`Request form headers: ${JSON.stringify(formHeaders)}`)
+      logger.log(`Request form data: ${this.body}`)
+      logger.log(`Request token: ${this.token}`)
       const response = await fetch(url, options)
 
       if (!response.ok) {
