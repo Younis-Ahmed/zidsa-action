@@ -44,14 +44,11 @@ export default async function updateTheme(
       form.append('change_type', releaseType)
       form.append('release_notes', reason)
 
-      const formHeaders = form.getHeaders()
-
       api.reset()
         .addBaseUrl()
         .addRoute(`/partners/themes/cli_update/${theme_id}`)
         .addUserToken()
         .addFormData(form)
-        .addHeaders(Object.entries(formHeaders).map(([key, value]) => ({ key, value })))
         .post()
         .send()
         .then((result: any) => {
