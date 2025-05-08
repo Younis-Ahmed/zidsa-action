@@ -55,7 +55,12 @@ export default async function updateTheme(
         .post()
         .send()
         .then((result: any) => {
-          logger.log('Theme update API request successful')
+          logger.log(`Theme update API request successful: ${result}`)
+          if (result.status !== 200) {
+            logger.error('Theme update API request failed')
+            reject(new Error(`API request failed with status: ${result.status}`))
+            return
+          }
           resolve(result)
         })
         .catch((err: any) => {
