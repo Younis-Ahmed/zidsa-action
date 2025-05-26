@@ -43,7 +43,7 @@
     "@actions/core": "^1.11.1",
     "archiver": "^7.0.1",
     "conventional-changelog-angular": "^8.0.0",
-    "conventional-recommended-bump": "^11.0.0",
+    "conventional-recommended-bump": "^11.1.0",
     "form-data": "^4.0.2"
   },
   "optionalDependencies": {
